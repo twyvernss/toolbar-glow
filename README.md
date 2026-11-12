@@ -2,6 +2,13 @@
 
 Makes your browser's tabs and address bar match the colour of the website you are on. On YouTube it follows the colours of the video.
 
+![Toolbar matching a purple video](images/purple.webp)
+
+<p>
+  <img src="images/green.webp" alt="Toolbar matching a green and pink video" width="49%">
+  <img src="images/yellow.webp" alt="Toolbar matching a yellow video" width="49%">
+</p>
+
 Works on Brave and Chrome for Windows.
 
 Works best together with [Ambient light for YouTube](https://chromewebstore.google.com/detail/ambient-light-for-youtube/paponcgjfojgemddooebbgniglhkajkj).
