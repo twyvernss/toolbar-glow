@@ -10,8 +10,18 @@ Works best together with [Ambient light for YouTube](https://chromewebstore.goog
 
 1. Click Code, then Download ZIP, and extract it.
 2. Double click `install.bat` and allow the admin prompt. If Windows shows a SmartScreen warning, click More info, then Run anyway.
-3. Open `brave://extensions` or `chrome://extensions`, turn on Developer mode, click Load unpacked and pick the extracted folder.
-4. Reload your open tabs.
+3. Copy one of these into your address bar:
+
+   Brave
+   ```
+   brave://extensions
+   ```
+   Chrome
+   ```
+   chrome://extensions
+   ```
+4. Turn on Developer mode, click Load unpacked and pick the extracted folder.
+5. Reload your open tabs.
 
 If the toolbar does not change colour, click the extension icon and press Run setup.
 
