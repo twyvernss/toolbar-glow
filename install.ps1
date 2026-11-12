@@ -25,16 +25,25 @@ try {
   $hku = "Registry::HKEY_USERS\$UserSid"
   if (-not (Test-Path $hku)) { throw "Registry for $UserName is not loaded. Log in as that user and try again." }
 
-  $parent = "$hku\SOFTWARE\Policies\BraveSoftware"
-  $key    = "$parent\Brave"
-  if (-not (Test-Path $parent)) { New-Item $parent | Out-Null }
-  if (-not (Test-Path $key))    { New-Item $key | Out-Null }
-  $acl  = Get-Acl $key
+  function Ensure-Key($path) {
+    $parts = $path.Substring($hku.Length + 1).Split('\')
+    $cur = $hku
+    foreach ($p in $parts) {
+      $cur = "$cur\$p"
+      if (-not (Test-Path $cur)) { New-Item $cur | Out-Null }
+    }
+  }
+
   $sid  = New-Object System.Security.Principal.SecurityIdentifier $UserSid
   $rule = New-Object System.Security.AccessControl.RegistryAccessRule($sid, 'ReadKey, SetValue, CreateSubKey, Delete', 'ContainerInherit', 'None', 'Allow')
-  $acl.AddAccessRule($rule)
-  Set-Acl $key $acl
-  Write-Host "[1/3] Brave theme setting ready for $UserName" -ForegroundColor Green
+  foreach ($policy in 'SOFTWARE\Policies\BraveSoftware\Brave', 'SOFTWARE\Policies\Google\Chrome') {
+    $key = "$hku\$policy"
+    Ensure-Key $key
+    $acl = Get-Acl $key
+    $acl.AddAccessRule($rule)
+    Set-Acl $key $acl
+  }
+  Write-Host "[1/3] Brave and Chrome theme settings ready for $UserName" -ForegroundColor Green
 
   $manifest = [ordered]@{
     name            = $hostName
@@ -45,16 +54,18 @@ try {
   }
   $manifestPath = Join-Path $hostDir "$hostName.json"
   [IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json), (New-Object Text.UTF8Encoding $false))
-  $reg = "$hku\SOFTWARE\BraveSoftware\Brave-Browser\NativeMessagingHosts\$hostName"
-  if (-not (Test-Path $reg)) { New-Item $reg -Force | Out-Null }
-  Set-Item $reg -Value $manifestPath
-  Write-Host '[2/3] Helper registered with Brave' -ForegroundColor Green
+  foreach ($nm in 'SOFTWARE\BraveSoftware\Brave-Browser\NativeMessagingHosts', 'SOFTWARE\Google\Chrome\NativeMessagingHosts') {
+    $reg = "$hku\$nm\$hostName"
+    Ensure-Key $reg
+    Set-Item $reg -Value $manifestPath
+  }
+  Write-Host '[2/3] Helper registered with Brave and Chrome' -ForegroundColor Green
 
   Get-ChildItem $root -Recurse -File | Unblock-File
   Write-Host '[3/3] Files unblocked' -ForegroundColor Green
 
   Write-Host ''
-  Write-Host 'Done! Now in Brave: brave://extensions -> Developer mode ON -> Load unpacked -> pick this folder.' -ForegroundColor Cyan
+  Write-Host 'Done! Now open brave://extensions or chrome://extensions, turn on Developer mode, click Load unpacked and pick this folder.' -ForegroundColor Cyan
   Write-Host '(Already loaded? Just press its reload button.)' -ForegroundColor Cyan
 } catch {
   Write-Host ('Setup failed: ' + $_.Exception.Message) -ForegroundColor Red
