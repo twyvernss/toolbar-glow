@@ -4,6 +4,8 @@ Makes your browser's tabs and address bar match the colour of the website you ar
 
 ![Toolbar matching a purple video](images/purple.webp)
 
+![Toolbar matching a pink video](images/pink.webp)
+
 <p>
   <img src="images/green.webp" alt="Toolbar matching a green and pink video" width="49%">
   <img src="images/yellow.webp" alt="Toolbar matching a yellow video" width="49%">
