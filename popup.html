@@ -11,6 +11,10 @@
   input[type=range] { width: 100%; accent-color: #b26cff; }
   input[type=checkbox] { width: 16px; height: 16px; accent-color: #b26cff; }
   small { color: #999; }
+  #hint { line-height: 1.4; word-break: break-word; }
+  #setupBtn { padding: 7px; border: 0; border-radius: 6px; font: 600 12px system-ui, sans-serif; color: #fff; cursor: pointer; background: linear-gradient(90deg, #7b3fe4, #e040a0); }
+  #setupBtn:disabled { opacity: .6; cursor: default; }
+  a { color: #b98cff; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -27,7 +31,12 @@
     <span>Glow height <small id="heightV"></small></span>
     <input type="range" id="height" min="30" max="320" step="10">
   </div>
-  <div class="row"><small id="status">Checking helper…</small></div>
+  <div class="row col" id="statusBox">
+    <small id="status">Checking helper…</small>
+    <small id="hint" hidden></small>
+    <button id="setupBtn" hidden>Run setup</button>
+    <a id="helpLink" href="https://github.com/twyvernss/toolbar-glow#install" target="_blank" hidden>How to install</a>
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>

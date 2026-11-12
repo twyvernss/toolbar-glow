@@ -11,6 +11,8 @@ Works on Brave and Chrome for Windows.
 3. Open `brave://extensions` or `chrome://extensions`, turn on Developer mode, click Load unpacked and pick the extracted folder.
 4. Reload your open tabs.
 
+If the toolbar does not change colour, click the extension icon and press Run setup.
+
 ## Settings
 
 Click the extension icon to turn it on or off, pick YouTube or other websites, and change the glow intensity and height.

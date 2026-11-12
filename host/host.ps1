@@ -102,9 +102,29 @@ function Apply-Value([string]$value) {
 
 $script:pending = $null
 $script:applied = $null
+$script:wanted  = $null
 $script:lastRun = [DateTime]::MinValue
+$script:setup   = $null
+$root = Split-Path $PSScriptRoot -Parent
+
+function Start-Setup {
+  if ($script:setup -and -not $script:setup.HasExited) { return }
+  $installer = Join-Path $root 'install.ps1'
+  $script:setup = Start-Process powershell.exe -PassThru -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$installer`"")
+  Send-Msg @{ type = 'setup'; state = 'started' }
+}
+
+function Check-Setup {
+  if ($script:setup -and $script:setup.HasExited) {
+    $script:setup = $null
+    $script:applied = $null
+    if ($script:wanted) { $script:pending = $script:wanted }
+    Send-Msg @{ type = 'setup'; state = 'finished' }
+  }
+}
 
 function Flush-Pending {
+  Check-Setup
   if ($null -eq $script:pending) { return }
   if ($script:pending -eq $script:applied) { $script:pending = $null; return }
   if (([DateTime]::UtcNow - $script:lastRun).TotalMilliseconds -lt $MinGapMs) { return }
@@ -117,8 +137,12 @@ function Flush-Pending {
     Send-Msg @{ type = 'applied'; value = $value; mode = $mode }
   } catch {
     $m = $_.Exception.Message
-    if ($m -match 'denied|unauthori') { $m = 'Cannot write theme setting. Run install.bat once (it asks for admin).' }
-    Send-Msg @{ type = 'error'; message = $m }
+    if ($m -match 'denied|unauthori') {
+      Send-Msg @{ type = 'error'; code = 'no-permission'; browser = $browser.Name; folder = $root
+                  message = ('Setup needed for ' + $browser.Name + '.') }
+    } else {
+      Send-Msg @{ type = 'error'; code = 'other'; message = $m }
+    }
   }
 }
 
@@ -145,8 +169,9 @@ while ($true) {
 
   try { $msg = [Text.Encoding]::UTF8.GetString($body) | ConvertFrom-Json } catch { continue }
   switch ($msg.type) {
-    'color' { if ($msg.hex -match '^#[0-9a-fA-F]{6}$') { $script:pending = $msg.hex.ToLower() } }
-    'reset' { $script:pending = 'reset' }
+    'color' { if ($msg.hex -match '^#[0-9a-fA-F]{6}$') { $script:pending = $msg.hex.ToLower(); $script:wanted = $script:pending } }
+    'reset' { $script:pending = 'reset'; $script:wanted = 'reset' }
+    'setup' { Start-Setup }
     'ping'  { Send-Msg @{ type = 'pong'; ready = $true; browser = $browser.Name; exe = $exe; userData = $userData } }
   }
   Flush-Pending

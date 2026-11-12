@@ -34,12 +34,42 @@ for (const id of ['intensity', 'height']) {
 
 function status() {
   chrome.runtime.sendMessage({ type: 'status' }, s => {
-    const el = $('status');
+    const el = $('status'), hint = $('hint'), btn = $('setupBtn'), help = $('helpLink');
     if (!s) return;
-    if (s.error) { el.textContent = 'Toolbar helper: ' + s.error; el.style.color = '#ff8a8a'; }
-    else if (s.connected) { el.textContent = 'Toolbar helper connected' + (s.applied ? ' · ' + s.applied : ''); el.style.color = '#8aff9e'; }
-    else { el.textContent = 'Toolbar helper not connected'; }
+    hint.hidden = btn.hidden = help.hidden = true;
+    el.style.color = '';
+    const err = s.error;
+
+    if (s.setup === 'started') {
+      el.textContent = 'Setup is running. Allow the admin prompt, then press Enter in the setup window.';
+      el.style.color = '#ffd36b';
+    } else if (err && err.code === 'no-permission') {
+      el.textContent = err.message + ' Click below and allow the admin prompt.';
+      el.style.color = '#ffd36b';
+      btn.hidden = false;
+      btn.disabled = false;
+      if (err.folder) { hint.hidden = false; hint.textContent = 'Or run install.bat from: ' + err.folder; }
+    } else if (err && err.code === 'not-installed') {
+      el.textContent = 'Toolbar colouring is not set up yet.';
+      el.style.color = '#ffd36b';
+      hint.hidden = false;
+      hint.textContent = 'Open the toolbar-glow folder you downloaded and double click install.bat, then reload this extension.';
+      help.hidden = false;
+    } else if (err) {
+      el.textContent = 'Toolbar helper: ' + err.message;
+      el.style.color = '#ff8a8a';
+    } else if (s.connected) {
+      el.textContent = 'Toolbar colouring on' + (s.applied ? ' · ' + s.applied : '');
+      el.style.color = '#8aff9e';
+    } else {
+      el.textContent = 'Toolbar helper not connected';
+    }
   });
 }
+
+$('setupBtn').addEventListener('click', () => {
+  $('setupBtn').disabled = true;
+  chrome.runtime.sendMessage({ type: 'run-setup' });
+});
 status();
 setInterval(status, 1500);

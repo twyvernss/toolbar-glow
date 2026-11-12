@@ -3,8 +3,9 @@ const tabColors = new Map();
 let settings = { enabled: true, toolbar: true };
 let port = null;
 let hostFailedAt = 0;
-let lastError = '';
+let lastError = null;
 let lastApplied = '';
+let setupState = '';
 
 chrome.storage.local.get({ enabled: true, toolbar: true }, v => { settings = v; });
 chrome.storage.onChanged.addListener(ch => {
@@ -20,16 +21,18 @@ function getPort() {
   try {
     port = chrome.runtime.connectNative(HOST);
     port.onMessage.addListener(m => {
-      if (m.type === 'error') lastError = m.message;
-      if (m.type === 'applied') { lastError = ''; lastApplied = m.value + (m.mode === 'slow' ? ' (slow mode)' : ''); }
+      if (m.type === 'error') lastError = m;
+      if (m.type === 'setup') setupState = m.state;
+      if (m.type === 'applied') { lastError = null; setupState = ''; lastApplied = m.value + (m.mode === 'slow' ? ' (slow mode)' : ''); }
     });
     port.onDisconnect.addListener(() => {
-      lastError = (chrome.runtime.lastError && chrome.runtime.lastError.message) || 'Helper disconnected';
+      const msg = (chrome.runtime.lastError && chrome.runtime.lastError.message) || 'Helper disconnected';
+      lastError = { code: /not found|forbidden/i.test(msg) ? 'not-installed' : 'other', message: msg };
       port = null;
       hostFailedAt = Date.now();
     });
   } catch (e) {
-    lastError = String(e);
+    lastError = { code: 'other', message: String(e) };
     port = null;
     hostFailedAt = Date.now();
   }
@@ -90,7 +93,11 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   }
   if (msg && msg.type === 'status') {
     getPort();
-    reply({ connected: !!port, error: lastError, applied: lastApplied });
+    reply({ connected: !!port, error: lastError, applied: lastApplied, setup: setupState });
+  }
+  if (msg && msg.type === 'run-setup') {
+    post({ type: 'setup' });
+    setTimeout(pushActiveTab, 500);
   }
 });
 
