@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Toolbar Glow",
+  "version": "1.1.0",
+  "description": "Ambient glow under the toolbar that matches the current site, and follows the video colours on YouTube.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqE/1t1afOnSsuvzpIzLmKLIW1s0KgDj6jb3kPOKnNB68cgSFCpmiBUmz9SCqNIxVmxcOuVwAt6W0+U4IbOFujh8RnnATY4M0a3xMjZvV/DaWYwMaXh1C3E1tEVfoWXki/AWouO7JCfkwmezWQanR4GgQZol5dU8A/6p9HZ8fg32Q+BBwB+CJ0Rl1KNw14VW58gCUCHCC0hrNsudZUpq1SCMgA6F/cIwyPYhRGZgMqeeVaeMP4wrTmAe8ALpOxNWLB04k0DvegGBzj9wnCMlmJCrqdZDOAc0fPpdemB5CUjx1ZbRbjf5Pp8iegWYJF/7eJcnYdM52+hPkMMBx9tgfqwIDAQAB",
+  "permissions": [
+    "storage",
+    "nativeMessaging"
+  ],
+  "icons": {
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Toolbar Glow",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/16.png",
+      "48": "icons/48.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
