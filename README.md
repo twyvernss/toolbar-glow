@@ -4,6 +4,8 @@ Makes your browser's tabs and address bar match the colour of the website you ar
 
 Works on Brave and Chrome for Windows.
 
+Works best together with [Ambient light for YouTube](https://chromewebstore.google.com/detail/ambient-light-for-youtube/paponcgjfojgemddooebbgniglhkajkj).
+
 ## Install
 
 1. Click Code, then Download ZIP, and extract it.
